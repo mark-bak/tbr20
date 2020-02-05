@@ -8,7 +8,8 @@
 //SD SHIZZLE
 File root;
 File logFile;
-String filename = "MattSucks"; //=myName
+String prefix = "tst"; //this cant be longer than 3 letters for soome reason
+String filename = "test";
 //bool customFileName = false;
 
 //constants
@@ -56,15 +57,18 @@ void setup() {
   int index = 0;
   while (true) {
     index ++;
+    Serial.println(index);
     File entry =  root.openNextFile();
     if (! entry) {
       // no more files
-      filename = String("log" + String(index) + ".csv");
+      filename = String(prefix + String(index) + ".csv");
+      Serial.println(filename);
       break;
     }
   }
 
-  logFile = SD.open(filename, FILE_WRITE);
+  
+  logFile = SD.open(filename,FILE_WRITE);
   if (logFile) {
     Serial.println("created" + filename);
   } else {
