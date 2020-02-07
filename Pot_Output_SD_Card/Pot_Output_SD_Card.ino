@@ -13,8 +13,9 @@ String filename = "test";
 //bool customFileName = false;
 
 //constants
-float cal[] = {16.93, 16.93, 16.93, 16.93, 2.842}; //calibration factor mm/ADC_out
-int sampleRate = 2;  //hz
+float cal[] = {-22.97, 22.97, 22.97, 22.97, 2.842}; //calibration factor mm/ADC_out
+float offset[] = {51.224,0,0,0,0};
+int sampleRate = 1;  //hz
 unsigned long sampleTime = 1000 / sampleRate; //ms
 int sensorPins[] = {0, 1, 2, 3, 4}; //no of inputs to sense
 float readingCalibrated[len(sensorPins)];
@@ -95,7 +96,7 @@ void loop() {
     //read and print
     for (int i = 0; i < len(sensorPins); i++) {
       int reading = analogRead(i);
-      readingCalibrated[i] = reading / cal[i];
+      readingCalibrated[i] = reading / cal[i] + offset[i];
       logFile.print(String(readingCalibrated[i]) + ",");
       Serial.print(String(readingCalibrated[i]) + ",");
     }
