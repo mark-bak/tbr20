@@ -3,21 +3,22 @@
 //calibration and sample rate
 #include <SPI.h>
 #include <SD.h>
+#include <EEPROM.h>
 #define len(x) (sizeof(x) / sizeof((x)[0]))
 
 //SD SHIZZLE
 File root;
 File logFile;
 String prefix = "tst"; //this cant be longer than 3 letters for soome reason
-String filename = "test";
+String filename;
 //bool customFileName = false;
 
-//constants
-float cal[] = {-22.97, 22.97, 22.97, 22.97, 2.842}; //calibration factor mm/ADC_out
-float offset[] = {51.224,0,0,0,0};
-int sampleRate = 1;  //hz
+//constants - THIS IS ALL YOU WOULD REALLY WANT TO CHANGE
+float cal[] = {0.0435, 0.0435, 0.0435, 0.0435, 1,1.055}; //Measured_Range/ADC_out(0-1023)
+float offset[] = {0,0,0,0,0,-420};
+int sampleRate = 30;  //hz
 unsigned long sampleTime = 1000 / sampleRate; //ms
-int sensorPins[] = {0, 1, 2, 3, 4}; //no of inputs to sense
+int sensorPins[] = {0, 1, 2, 3, 4, 5}; //no of inputs to sense
 float readingCalibrated[len(sensorPins)];
 
 bool logging = true;
@@ -29,8 +30,12 @@ bool del = false;
 //SD card pin location
 const int chipSelect = 10;
 
+//file_index
+int index = 0;
 
 void setup() {
+
+  
 
   //Start serial & pin modes
   pinMode(0, INPUT);
@@ -50,34 +55,22 @@ void setup() {
       while (1);
     }
     Serial.println("card initialized.");
-  }
 
-  //Make a new filename if custom filename not created
-
-  root = SD.open("/");
-  int index = 0;
-  while (true) {
+    index = EEPROM.read(0);
     index ++;
-    Serial.println(index);
-    File entry =  root.openNextFile();
-    if (! entry) {
-      // no more files
-      filename = String(prefix + String(index) + ".csv");
-      Serial.println(filename);
-      break;
+    EEPROM.write(0,index);
+
+    filename = String(prefix + String(index));
+    
+    logFile = SD.open(filename,FILE_WRITE);
+    if (logFile) {
+      Serial.println("created" + filename);
+    } else {
+      Serial.println("fuck");
     }
+    logFile.close();
+    
   }
-
-  
-  logFile = SD.open(filename,FILE_WRITE);
-  if (logFile) {
-    Serial.println("created" + filename);
-  } else {
-    Serial.println("fuck");
-  }
-  logFile.close();
-
-
   //timer stuff
   delStart = millis();
   del = true;
@@ -96,13 +89,13 @@ void loop() {
     //read and print
     for (int i = 0; i < len(sensorPins); i++) {
       int reading = analogRead(i);
-      readingCalibrated[i] = reading / cal[i] + offset[i];
+      readingCalibrated[i] = reading * cal[i] + offset[i];
       logFile.print(String(readingCalibrated[i]) + ",");
-      Serial.print(String(readingCalibrated[i]) + ",");
+      //Serial.print(String(readingCalibrated[i]) + ",");
     }
 
     logFile.print(String(t) + "\n");
-    Serial.print(String(t) + "\n");
+    //Serial.print(String(t) + "\n");
     logFile.close();//maybe make opeining and closing only happen every set number of cycles for speed
   }
 }
