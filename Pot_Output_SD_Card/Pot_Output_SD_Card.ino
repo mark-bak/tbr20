@@ -35,8 +35,6 @@ int index = 0;
 
 void setup() {
 
-  
-
   //Start serial & pin modes
   pinMode(0, INPUT);
   Serial.begin(9600);
@@ -66,7 +64,7 @@ void setup() {
     if (logFile) {
       Serial.println("created" + filename);
     } else {
-      Serial.println("fuck");
+      Serial.println("whoops");
     }
     logFile.close();
     
